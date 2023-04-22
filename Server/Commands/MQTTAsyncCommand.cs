@@ -1,3 +1,4 @@
+using Core;
 using Microsoft.Extensions.Logging;
 using Package;
 using SuperSocket.Command;
@@ -13,7 +14,7 @@ public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQ
     protected virtual async ValueTask SchedulerAsync(MQTTSession session, MQTTPackage package,
         CancellationToken cancellationToken)
     {
-        var request = (MQTTPackage)package;
+        var request = (TPackage)package;
 
         try
         {
@@ -21,7 +22,7 @@ public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQ
         }
         catch (Exception e)
         {
-            //session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
+            session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
         }
         finally
         {
@@ -44,6 +45,8 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         _packetFactory = packetFactoryPool.Get<TRespPackage>();
     }
 
+    protected TRespPackage CreateResponse() => (TRespPackage)_packetFactory.Create();
+
     ValueTask IAsyncCommand<MQTTSession, MQTTPackage>.ExecuteAsync(MQTTSession session, MQTTPackage package) =>
         SchedulerAsync(session, package, session.ConnectionToken);
 
@@ -51,7 +54,7 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         CancellationToken cancellationToken)
     {
         TRespPackage respPackage;
-        var request = (MQTTPackage)package;
+        var request = (TPackage)package;
 
         try
         {
@@ -59,7 +62,8 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         }
         catch (Exception e)
         {
-            //session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
+            respPackage = CreateResponse();
+            session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
         }
         finally
         {
@@ -76,6 +80,6 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         }
     }
 
-    protected abstract ValueTask<TRespPackage> ExecuteAsync(MQTTSession session, MQTTPackage packet, CancellationToken
+    protected abstract ValueTask<TRespPackage> ExecuteAsync(MQTTSession session, TPackage packet, CancellationToken
         cancellationToken);
 }

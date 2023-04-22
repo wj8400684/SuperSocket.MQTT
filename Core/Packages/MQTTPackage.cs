@@ -1,7 +1,7 @@
 using System.Buffers;
 using SuperSocket.ProtoBase;
 
-namespace Package;
+namespace Core;
 
 public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
 {
@@ -19,7 +19,7 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
         _packetFactory = factory;
     }
 
-    public abstract void DecodeBody(ref SequenceReader<byte> reader, object context);
+    protected internal abstract void DecodeBody(ref SequenceReader<byte> reader, object context);
 
     public abstract int EncodeBody(IBufferWriter<byte> writer);
 
@@ -27,7 +27,7 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
     {
         _packetFactory?.Return(this);
     }
-    
+
     public override string ToString()
     {
         return System.Text.Json.JsonSerializer.Serialize(this, GetType());

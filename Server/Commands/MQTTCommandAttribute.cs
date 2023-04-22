@@ -1,4 +1,4 @@
-using Package;
+using Core;
 using SuperSocket.Command;
 
 namespace Server.Commands;

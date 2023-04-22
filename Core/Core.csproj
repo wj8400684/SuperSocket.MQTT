@@ -5,9 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Package\Package.csproj" />
-    </ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="SuperSocket.ProtoBase" Version="2.0.0-beta.16.407" />
+	</ItemGroup>
 </Project>

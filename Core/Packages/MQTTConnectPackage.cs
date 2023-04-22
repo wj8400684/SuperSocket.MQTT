@@ -1,10 +1,8 @@
+using Core;
 using SuperSocket.ProtoBase;
 using System.Buffers;
-using System.Data;
-using System.Net.Sockets;
-using System.Text;
 
-namespace Package;
+namespace Core;
 
 public sealed class MQTTConnectPackage : MQTTPackage
 {
@@ -69,7 +67,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     public bool TryPrivate { get; set; }
 
-    public override void DecodeBody(ref SequenceReader<byte> reader, object context)
+    protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
     {
         const string MQTT = "MQTT";
         const string MQIsdp = "MQIsdp";

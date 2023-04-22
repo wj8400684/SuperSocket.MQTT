@@ -1,6 +1,6 @@
 using Package;
 
-namespace Package;
+namespace Core;
 
 public interface IMQTTPackageFactory
 {

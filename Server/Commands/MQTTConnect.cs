@@ -1,4 +1,4 @@
-using Package;
+using Core;
 
 namespace Server.Commands;
 
@@ -8,13 +8,28 @@ namespace Server.Commands;
 [MQTTCommand(MQTTCommand.Connect)]
 public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConnectRespPackage>
 {
-    public string RemoteAddress { get; }
-
-    public CancellationToken ConnectionToken { get; }
-
-    protected override ValueTask<MQTTConnectRespPackage> ExecuteAsync(MQTTSession session, MQTTPackage packet,
-        CancellationToken cancellationToken)
+    public MQTTConnect(IMQTTPackageFactoryPool packetFactoryPool) : base(packetFactoryPool)
     {
-        throw new NotImplementedException();
+    }
+
+    protected override async ValueTask<MQTTConnectRespPackage> ExecuteAsync(MQTTSession session, MQTTConnectPackage packet, CancellationToken cancellationToken)
+    {
+        var response = CreateResponse();
+
+        if (await session.ValidateConnectionaAsync(packet))
+        {
+            return response;
+        }
+
+        if (string.IsNullOrWhiteSpace(packet.ClientId))
+        {
+            session.ClientId = packet.ClientId;
+        }
+        else
+        {
+            session.ClientId = packet.ClientId;
+        }
+
+        return response;
     }
 }
