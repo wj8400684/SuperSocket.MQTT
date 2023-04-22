@@ -8,6 +8,10 @@ namespace Server.Commands;
 [MQTTCommand(MQTTCommand.Connect)]
 public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConnectRespPackage>
 {
+    public string RemoteAddress { get; }
+
+    public CancellationToken ConnectionToken { get; }
+
     protected override ValueTask<MQTTConnectRespPackage> ExecuteAsync(MQTTSession session, MQTTPackage packet,
         CancellationToken cancellationToken)
     {

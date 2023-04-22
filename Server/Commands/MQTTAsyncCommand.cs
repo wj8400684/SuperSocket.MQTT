@@ -7,13 +7,6 @@ namespace Server.Commands;
 public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQTTPackage>
     where TPackage : MQTTPackage
 {
-//     private readonly IMQTTPackageFactory _packetFactory;
-//
-//     public MQTTAsyncCommand(IPacketFactoryPool packetFactoryPool)
-//     {
-//         _packetFactory = packetFactoryPool.Get(CommandKey.LoginAck);
-//     }
-//     
     ValueTask IAsyncCommand<MQTTSession, MQTTPackage>.ExecuteAsync(MQTTSession session, MQTTPackage package) =>
         SchedulerAsync(session, package, session.ConnectionToken);
 
@@ -44,13 +37,13 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
     where TPackage : MQTTPackage
     where TRespPackage : MQTTPackage
 {
-//     private readonly IMQTTPackageFactory _packetFactory;
-//
-//     public MQTTAsyncCommand(IPacketFactoryPool packetFactoryPool)
-//     {
-//         _packetFactory = packetFactoryPool.Get(CommandKey.LoginAck);
-//     }
-//     
+    private readonly IMQTTPackageFactory _packetFactory;
+
+    public MQTTAsyncCommand(IMQTTPackageFactoryPool packetFactoryPool)
+    {
+        _packetFactory = packetFactoryPool.Get<TRespPackage>();
+    }
+
     ValueTask IAsyncCommand<MQTTSession, MQTTPackage>.ExecuteAsync(MQTTSession session, MQTTPackage package) =>
         SchedulerAsync(session, package, session.ConnectionToken);
 
@@ -75,7 +68,7 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
 
         try
         {
-            await session.SendPacketAsync(respPackage);
+            await session.SendPackageAsync(respPackage);
         }
         finally
         {

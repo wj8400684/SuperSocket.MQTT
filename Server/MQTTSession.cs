@@ -5,7 +5,7 @@ namespace Server;
 
 public class MQTTSession : AppSession
 {
-    public async ValueTask SendPacketAsync(MQTTPackage package)
+    public async ValueTask SendPackageAsync(MQTTPackage package)
     {
         throw new NotImplementedException();
     }
