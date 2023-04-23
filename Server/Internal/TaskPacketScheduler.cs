@@ -26,10 +26,10 @@ internal readonly struct TaskItem
 internal sealed class TaskPacketScheduler
 {
     private readonly TimeSpan _timeout;
-    private ILogger<TaskPacketScheduler> _logger;
+    private ILogger _logger;
     private readonly AsyncQueue<TaskItem> _schedulerQueue = new();
 
-    public TaskPacketScheduler(ILogger<TaskPacketScheduler> logger)
+    public TaskPacketScheduler(ILogger logger)
     {
         _logger = logger;
         _timeout = TimeSpan.FromMilliseconds(20);

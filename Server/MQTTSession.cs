@@ -15,11 +15,11 @@ public class MQTTSession : AppSession
     private readonly CancellationTokenSource _tokenSource = new();
     private readonly MQTTSubscriptionsManager _subscriptionsManager;
 
-    public MQTTSession(IServiceProvider serviceProvider)
+    public MQTTSession(IPackageEncoder<MQTTPackage> encoder)
     {
+        _encoder = encoder;
+        _taskScheduler = new TaskPacketScheduler(Logger);
         _subscriptionsManager = new MQTTSubscriptionsManager(this);
-        _encoder = serviceProvider.GetRequiredService<IPackageEncoder<MQTTPackage>>();
-        _taskScheduler = serviceProvider.GetRequiredService<TaskPacketScheduler>();
         ConnectionToken = _tokenSource.Token;
     }
 

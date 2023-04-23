@@ -2,6 +2,7 @@ namespace Core;
 
 public enum MQTTCommand
 {
+    None = 0,
     Connect = 1,
     ConnAck = 2,
     Publish = 3,

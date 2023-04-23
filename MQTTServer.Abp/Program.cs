@@ -4,6 +4,7 @@ using Server;
 using SuperSocket.Command;
 using Server.Commands;
 using MQTTServer.Abp;
+using SuperSocket.ProtoBase;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,9 @@ builder.Host.AsSuperSocketHostBuilder<MQTTPackage, MQTTPipelineFilter>()
             .UseChannelCreatorFactory<TcpIocpChannelWithKestrelCreatorFactory>()
             .AsMinimalApiHostBuilder()
             .ConfigureHostBuilder();
+
+builder.Services.AddSingleton<IMQTTPackageFactoryPool, MQTTPackageFactoryPool>();
+builder.Services.AddSingleton<IPackageEncoder<MQTTPackage>, MQTTPackageEncoder>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

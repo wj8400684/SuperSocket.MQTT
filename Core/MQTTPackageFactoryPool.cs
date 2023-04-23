@@ -7,7 +7,7 @@ public sealed class MQTTPackageFactoryPool : IMQTTPackageFactoryPool
 
     public MQTTPackageFactoryPool()
     {
-        _packetFactories = new IMQTTPackageFactory[20];
+        _packetFactories = new IMQTTPackageFactory[16];
 
         _packetFactories[(byte)MQTTCommand.Connect] = new MQTTPackageFactory<MQTTConnectPackage>();
         _packetFactories[(byte)MQTTCommand.ConnAck] = new MQTTPackageFactory<MQTTConnectRespPackage>();
