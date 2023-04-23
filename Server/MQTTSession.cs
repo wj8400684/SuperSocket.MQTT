@@ -1,5 +1,6 @@
 using Core;
 using Microsoft.Extensions.DependencyInjection;
+using Server.Internal;
 using SuperSocket.Channel;
 using SuperSocket.ProtoBase;
 using SuperSocket.Server;
@@ -12,9 +13,11 @@ public class MQTTSession : AppSession
     private readonly IPackageEncoder<MQTTPackage> _encoder;
     private readonly TaskPacketScheduler _taskScheduler;
     private readonly CancellationTokenSource _tokenSource = new();
+    private readonly MQTTSubscriptionsManager _subscriptionsManager;
 
     public MQTTSession(IServiceProvider serviceProvider)
     {
+        _subscriptionsManager = new MQTTSubscriptionsManager(this);
         _encoder = serviceProvider.GetRequiredService<IPackageEncoder<MQTTPackage>>();
         _taskScheduler = serviceProvider.GetRequiredService<TaskPacketScheduler>();
         ConnectionToken = _tokenSource.Token;
@@ -58,6 +61,7 @@ public class MQTTSession : AppSession
     {
         _tokenSource.Cancel();
         _tokenSource.Dispose();
+        _subscriptionsManager.Dispose();
 
         return base.OnSessionClosedAsync(e);
     }

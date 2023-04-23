@@ -34,9 +34,7 @@ internal sealed class AsyncLock : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         if (_isDisposed)
-        {
             throw new ObjectDisposedException(nameof(AsyncLock));
-        }
 
         lock (_syncRoot)
         {

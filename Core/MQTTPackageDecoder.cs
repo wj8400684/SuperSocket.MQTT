@@ -25,12 +25,14 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
         var package = packageFactory.Create();
         package.FixedHeader = firstByte;
 
+        int lenSize;
+
         while (true)
         {
             if (!reader.TryRead(out byte lenByte))
                 break;
 
-            int lenSize = +1;
+            lenSize = +1;
             if ((lenByte & 0x80) != 0x80)
                 break;
 
