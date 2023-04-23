@@ -48,6 +48,7 @@ public class MQTTSession : AppSession
 
     protected override ValueTask OnSessionConnectedAsync()
     {
+        _taskScheduler.Start(_tokenSource.Token);
         RemoteAddress = ((IPEndPoint)RemoteEndPoint).Address.ToString();
 
         return ValueTask.CompletedTask;

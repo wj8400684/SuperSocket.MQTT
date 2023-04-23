@@ -1,23 +1,21 @@
-﻿using Core;
-using Server;
-using SuperSocket.ProtoBase;
+﻿using Server;
 
 namespace Test;
 
 public sealed class OrderSession : MQTTSession
 {
-    public OrderSession(IPackageEncoder<MQTTPackage> encoder) 
-        : base(encoder)
+    public OrderSession(IServiceProvider serviceProvider) 
+        : base(serviceProvider)
     {
     }
 
-    public override ValueTask ClientConnectedAsync()
+    public override ValueTask ClientConnectedAsync(CancellationToken cancellationToken)
     {
-        return base.ClientConnectedAsync();
+        return base.ClientConnectedAsync(cancellationToken);
     }
 
-    public override ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result)
+    public override ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result, CancellationToken cancellationToken)
     {
-        return base.ValidateConnectionaAsync(result);
+        return base.ValidateConnectionaAsync(result, cancellationToken);
     }
 }
