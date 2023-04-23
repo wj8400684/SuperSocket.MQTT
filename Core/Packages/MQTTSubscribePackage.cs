@@ -25,10 +25,7 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
         if (!TopicFilters.Any())
             throw new MQTTProtocolViolationException("At least one topic filter must be set [MQTT-3.8.3-3].");
 
-        if (PacketIdentifier == 0)
-            throw new MQTTProtocolViolationException("Subscribe packet has no packet identifier.");
-
-        var length = writer.WriteBigEndian(PacketIdentifier);
+        var length = base.EncodeBody(writer);
 
         foreach (var topicFilter in TopicFilters)
         {
@@ -41,8 +38,7 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
 
     protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
     {
-        reader.TryReadBigEndian(out var packetIdentifier);
-        PacketIdentifier = packetIdentifier;
+        base.DecodeBody(ref reader, context);
 
         while (!reader.End)
         {
@@ -59,8 +55,8 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
 
     public override void Dispose()
     {
-        SubscriptionIdentifier = default;
         TopicFilters.Clear();
+        SubscriptionIdentifier = default;
         UserProperties = default;
         base.Dispose();
     }

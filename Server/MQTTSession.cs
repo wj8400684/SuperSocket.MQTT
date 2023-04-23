@@ -1,4 +1,5 @@
 using Core;
+using Microsoft.Extensions.DependencyInjection;
 using SuperSocket.Channel;
 using SuperSocket.ProtoBase;
 using SuperSocket.Server;
@@ -9,11 +10,13 @@ namespace Server;
 public class MQTTSession : AppSession
 {
     private readonly IPackageEncoder<MQTTPackage> _encoder;
+    private readonly TaskPacketScheduler _taskScheduler;
     private readonly CancellationTokenSource _tokenSource = new();
 
-    public MQTTSession(IPackageEncoder<MQTTPackage> encoder)
+    public MQTTSession(IServiceProvider serviceProvider)
     {
-        _encoder = encoder;
+        _encoder = serviceProvider.GetRequiredService<IPackageEncoder<MQTTPackage>>();
+        _taskScheduler = serviceProvider.GetRequiredService<TaskPacketScheduler>();
         ConnectionToken = _tokenSource.Token;
     }
 
@@ -66,8 +69,9 @@ public class MQTTSession : AppSession
     /// 验证连接
     /// </summary>
     /// <param name="result"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public virtual ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result)
+    public virtual ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result, CancellationToken cancellationToken)
     {
         CreatedTimestamp = DateTime.UtcNow;
         return ValueTask.FromResult(result);
@@ -76,9 +80,27 @@ public class MQTTSession : AppSession
     /// <summary>
     /// 客户端连接成功
     /// </summary>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public virtual ValueTask ClientConnectedAsync()
+    public virtual ValueTask ClientConnectedAsync(CancellationToken cancellationToken)
     {
+        return ValueTask.CompletedTask;
+    }
+
+    #endregion
+
+    #region internal
+
+    /// <summary>
+    /// 添加到任务调度
+    /// </summary>
+    /// <param name="package"></param>
+    /// <param name="task"></param>
+    internal ValueTask SchedulerAsync(MQTTPackage package,
+        Func<MQTTSession, MQTTPackage, CancellationToken, ValueTask> task)
+    {
+        _taskScheduler.Add(new TaskItem(this, package, task));
+
         return ValueTask.CompletedTask;
     }
 
@@ -87,7 +109,7 @@ public class MQTTSession : AppSession
     /// </summary>
     /// <param name="package"></param>
     /// <returns></returns>
-    public ValueTask SendPackageAsync(MQTTPackage package)
+    internal ValueTask SendPackageAsync(MQTTPackage package)
     {
         if (Channel.IsClosed)
             return ValueTask.CompletedTask;

@@ -40,10 +40,7 @@ public sealed class MQTTPublishPackage : MQTTPackageWithIdentifier
 
         if (QualityOfServiceLevel > MQTTQualityOfServiceLevel.AtMostOnce)
         {
-            if (PacketIdentifier == 0)
-                throw new MQTTProtocolViolationException("Publish packet has no packet identifier.");
-
-            length += writer.WriteBigEndian(PacketIdentifier);
+            length += base.EncodeBody(writer);
         }
         else
         {
@@ -77,14 +74,9 @@ public sealed class MQTTPublishPackage : MQTTPackageWithIdentifier
 
         var topic = reader.ReadLengthEncodedString();
 
-        ushort packetIdentifier = 0;
         if (qualityOfServiceLevel > MQTTQualityOfServiceLevel.AtMostOnce)
-        {
-            reader.TryReadBigEndian(out packetIdentifier);
-            PacketIdentifier = packetIdentifier;
-        }
+            base.DecodeBody(ref reader, context);
 
-        PacketIdentifier = packetIdentifier;
         Retain = retain;
         Topic = topic;
         QualityOfServiceLevel = qualityOfServiceLevel;

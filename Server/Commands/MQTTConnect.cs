@@ -8,15 +8,16 @@ namespace Server.Commands;
 [MQTTCommand(MQTTCommand.Connect)]
 public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConnectRespPackage>
 {
-    public MQTTConnect(IMQTTPackageFactoryPool packetFactoryPool) : base(packetFactoryPool)
+    public MQTTConnect(IMQTTPackageFactoryPool packetFactoryPool) 
+        : base(packetFactoryPool)
     {
     }
 
-    protected override async ValueTask<MQTTConnectRespPackage> ExecuteAsync(MQTTSession session, MQTTConnectPackage packet, CancellationToken cancellationToken)
+    protected override async ValueTask<MQTTConnectRespPackage?> ExecuteAsync(MQTTSession session, MQTTConnectPackage packet, CancellationToken cancellationToken)
     {
         var response = CreateResponse();
 
-        var result = await session.ValidateConnectionaAsync(new ValidatingConnectionResult(packet));
+        var result = await session.ValidateConnectionaAsync(new ValidatingConnectionResult(packet, response), cancellationToken);
 
         if (result.ReasonCode != MQTTConnectReasonCode.Success)
         {
@@ -25,14 +26,12 @@ public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConne
         }
 
         if (string.IsNullOrWhiteSpace(packet.ClientId))
-        {
-            session.ClientId = packet.ClientId;
-        }
+            session.ClientId = result.AssignedClientIdentifier;
         else
-        {
             session.ClientId = packet.ClientId;
-        }
 
-        return response;
+        await session.ClientConnectedAsync(cancellationToken);
+
+        return result.GetResponse();
     }
 }

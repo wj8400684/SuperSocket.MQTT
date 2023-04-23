@@ -1,6 +1,5 @@
 using Core;
 using Microsoft.Extensions.Logging;
-using Package;
 using SuperSocket.Command;
 
 namespace Server.Commands;
@@ -26,7 +25,7 @@ public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQ
         }
         finally
         {
-            package.Dispose();
+            request.Dispose();
         }
     }
 
@@ -53,7 +52,8 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
     protected virtual async ValueTask SchedulerAsync(MQTTSession session, MQTTPackage package,
         CancellationToken cancellationToken)
     {
-        TRespPackage respPackage;
+        TRespPackage? respPackage = null;
+
         var request = (TPackage)package;
 
         try
@@ -62,13 +62,15 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         }
         catch (Exception e)
         {
-            respPackage = CreateResponse();
             session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
         }
         finally
         {
-            package.Dispose();
+            request.Dispose();
         }
+
+        if (respPackage == null)
+            return;
 
         try
         {
@@ -80,6 +82,6 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         }
     }
 
-    protected abstract ValueTask<TRespPackage> ExecuteAsync(MQTTSession session, TPackage packet, CancellationToken
+    protected abstract ValueTask<TRespPackage?> ExecuteAsync(MQTTSession session, TPackage package, CancellationToken
         cancellationToken);
 }

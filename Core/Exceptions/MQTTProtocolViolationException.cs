@@ -15,8 +15,4 @@ public sealed class MQTTProtocolViolationException : Exception
     public MQTTProtocolViolationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
-
-    protected MQTTProtocolViolationException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
 }

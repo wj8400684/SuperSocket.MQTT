@@ -1,6 +1,5 @@
 ﻿
 using Core;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Server;
@@ -8,16 +7,19 @@ namespace Server;
 public sealed class ValidatingConnectionResult
 {
     private readonly MQTTConnectPackage _connectPackage;
+    private readonly MQTTConnectRespPackage _respPackage;
 
-    public ValidatingConnectionResult(MQTTConnectPackage package)
+    public ValidatingConnectionResult(MQTTConnectPackage package, MQTTConnectRespPackage respPackage)
     {
+        _connectPackage = package;
+        _respPackage = respPackage;
     }
 
     /// <summary>
     ///     Gets or sets the assigned client identifier.
     ///     MQTTv5 only.
     /// </summary>
-    public string AssignedClientIdentifier { get; set; }
+    public string? AssignedClientIdentifier { get; set; }
 
     /// <summary>
     ///     Gets or sets the authentication data.
@@ -35,7 +37,7 @@ public sealed class ValidatingConnectionResult
     ///     Gets the channel adapter. This can be a _MqttConnectionContext_ (used in ASP.NET), a _MqttChannelAdapter_ (used for
     ///     TCP or WebSockets) or a custom implementation.
     /// </summary>
-    public IMqttChannelAdapter ChannelAdapter { get; }
+    //public IMqttChannelAdapter ChannelAdapter { get; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether clean sessions are used or not.
@@ -49,7 +51,7 @@ public sealed class ValidatingConnectionResult
     /// </summary>
     public bool? CleanSession => _connectPackage.CleanSession;
 
-    public X509Certificate2 ClientCertificate => ChannelAdapter.ClientCertificate;
+    //public X509Certificate2 ClientCertificate => ChannelAdapter.ClientCertificate;
 
     /// <summary>
     ///     Gets the client identifier.
@@ -57,9 +59,9 @@ public sealed class ValidatingConnectionResult
     /// </summary>
     public string? ClientId => _connectPackage.ClientId;
 
-    public string Endpoint => ChannelAdapter.Endpoint;
+    //public string Endpoint => ChannelAdapter.Endpoint;
 
-    public bool IsSecureConnection => ChannelAdapter.IsSecureConnection;
+    //public bool IsSecureConnection => ChannelAdapter.IsSecureConnection;
 
     /// <summary>
     ///     Gets or sets the keep alive period.
@@ -76,9 +78,9 @@ public sealed class ValidatingConnectionResult
     /// </summary>
     public uint MaximumPacketSize => _connectPackage.MaximumPacketSize;
 
-    public string? Password => Encoding.UTF8.GetString(RawPassword ?? EmptyBuffer.Array);
+    public string? Password => Encoding.UTF8.GetString(RawPassword ?? System.Array.Empty<byte>());
 
-    public MQTTProtocolVersion ProtocolVersion => ChannelAdapter.PacketFormatterAdapter.ProtocolVersion;
+    //public MQTTProtocolVersion ProtocolVersion => ChannelAdapter.PacketFormatterAdapter.ProtocolVersion;
 
     public byte[]? RawPassword => _connectPackage.Password;
 
@@ -115,7 +117,7 @@ public sealed class ValidatingConnectionResult
     ///     Gets or sets the response authentication data.
     ///     <remarks>MQTT 5.0.0+ feature.</remarks>
     /// </summary>
-    public byte[] ResponseAuthenticationData { get; set; }
+    public byte[]? ResponseAuthenticationData { get; set; }
 
     /// <summary>
     ///     Gets or sets the response user properties.
@@ -177,4 +179,37 @@ public sealed class ValidatingConnectionResult
     /// </summary>
     public uint WillDelayInterval => _connectPackage.WillDelayInterval;
 
+    internal MQTTConnectRespPackage GetResponse()
+    {
+        _respPackage.ReturnCode = ReasonCode switch
+        {
+            MQTTConnectReasonCode.Success => MQTTConnectReturnCode.ConnectionAccepted,
+            MQTTConnectReasonCode.NotAuthorized => MQTTConnectReturnCode.ConnectionRefusedNotAuthorized,
+            MQTTConnectReasonCode.BadUserNameOrPassword => MQTTConnectReturnCode.ConnectionRefusedBadUsernameOrPassword,
+            MQTTConnectReasonCode.ClientIdentifierNotValid => MQTTConnectReturnCode.ConnectionRefusedIdentifierRejected,
+            MQTTConnectReasonCode.UnsupportedProtocolVersion => MQTTConnectReturnCode.ConnectionRefusedUnacceptableProtocolVersion,
+            MQTTConnectReasonCode.ServerUnavailable => MQTTConnectReturnCode.ConnectionRefusedServerUnavailable,
+            MQTTConnectReasonCode.ServerBusy => MQTTConnectReturnCode.ConnectionRefusedServerUnavailable,
+            MQTTConnectReasonCode.ServerMoved => MQTTConnectReturnCode.ConnectionRefusedServerUnavailable,
+            _ => throw new MQTTProtocolViolationException("Unable to convert connect reason code (MQTTv5) to return code (MQTTv3)."),
+        };
+
+        _respPackage.ReasonCode = ReasonCode;
+        _respPackage.RetainAvailable = true;
+        _respPackage.SubscriptionIdentifiersAvailable = false;
+        _respPackage.TopicAliasMaximum =  ushort.MaxValue;
+        _respPackage.MaximumQoS = MQTTQualityOfServiceLevel.ExactlyOnce;
+        _respPackage.WildcardSubscriptionAvailable = true;
+        _respPackage.AuthenticationMethod = AuthenticationMethod;
+        _respPackage.AuthenticationData = ResponseAuthenticationData;
+        _respPackage.AssignedClientIdentifier = AssignedClientIdentifier;
+        _respPackage.ReasonString = ReasonString;
+        _respPackage.ServerReference = ServerReference;
+        _respPackage.UserProperties = ResponseUserProperties;
+        _respPackage.ResponseInformation = null;
+        _respPackage.MaximumPacketSize = 0; // Unlimited,
+        _respPackage.ReceiveMaximum = 0; // Unlimited
+
+        return _respPackage;
+    }
 }
