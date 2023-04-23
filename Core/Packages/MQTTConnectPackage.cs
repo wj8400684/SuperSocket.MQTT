@@ -1,11 +1,11 @@
-using Core;
-using SuperSocket.ProtoBase;
 using System.Buffers;
 
 namespace Core;
 
 public sealed class MQTTConnectPackage : MQTTPackage
 {
+    private const string MQTT = "MQTT";
+
     public MQTTConnectPackage() : base(MQTTCommand.Connect)
     {
     }
@@ -19,7 +19,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
     /// </summary>
     public bool CleanSession { get; set; }
 
-    public string? ClientId { get; set; }
+    public string ClientId { get; set; } = default!;
 
     public byte[]? WillCorrelationData { get; set; }
 
@@ -61,7 +61,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     public bool WillRetain { get; set; }
 
-    public string? WillTopic { get; set; }
+    public string WillTopic { get; set; } = default!;
 
     public List<MQTTUserProperty>? WillUserProperties { get; set; }
 
@@ -69,7 +69,6 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
     {
-        const string MQTT = "MQTT";
         const string MQIsdp = "MQIsdp";
 
         var protocolName = reader.ReadLengthEncodedString();
@@ -121,7 +120,53 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
-        throw new NotImplementedException();
+        const byte ProtocolVersion = 4; // 3.1.2.2 Protocol Level 4
+
+        if (string.IsNullOrEmpty(ClientId) && !CleanSession)
+            throw new MQTTProtocolViolationException("CleanSession must be set if ClientId is empty [MQTT-3.1.3-7].");
+
+        var length = writer.WriteLengthEncodedString(MQTT);
+        length += writer.Write(ProtocolVersion);
+
+        byte connectFlags = 0x0;
+        if (CleanSession)
+            connectFlags |= 0x2;
+
+        if (WillFlag)
+        {
+            connectFlags |= 0x4;
+            connectFlags |= (byte)((byte)WillQoS << 3);
+
+            if (WillRetain)
+                connectFlags |= 0x20;
+        }
+
+        if (Password != null && Username == null)
+            throw new MQTTProtocolViolationException("If the User Name Flag is set to 0, the Password Flag MUST be set to 0 [MQTT-3.1.2-22].");
+
+        if (Password != null)
+            connectFlags |= 0x40;
+
+        if (Username != null)
+            connectFlags |= 0x80;
+
+        length += writer.Write(connectFlags);
+        length += writer.WriteBigEndian(KeepAlivePeriod);
+        length += writer.WriteLengthEncodedString(ClientId);
+
+        if (WillFlag)
+        {
+            length += writer.WriteLengthEncodedString(WillTopic);
+            length += writer.WriteBinaryData(WillMessage!);
+        }
+
+        if (Username != null)
+            length += writer.WriteLengthEncodedString(Username);
+
+        if (Password != null)
+            length += writer.WriteBinaryData(Password);
+
+        return length;
     }
 
     public override void Dispose()
@@ -154,15 +199,5 @@ public sealed class MQTTConnectPackage : MQTTPackage
         WillUserProperties = default;
         TryPrivate = default;
         base.Dispose();
-    }
-
-    public override string ToString()
-    {
-        var passwordText = string.Empty;
-
-        if (Password != null)
-            passwordText = "****";
-
-        return $"Connect: [ClientId={ClientId}] [Username={Username}] [Password={passwordText}] [KeepAlivePeriod={KeepAlivePeriod}] [CleanSession={CleanSession}]";
     }
 }

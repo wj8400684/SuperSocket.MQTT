@@ -16,8 +16,11 @@ public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConne
     {
         var response = CreateResponse();
 
-        if (await session.ValidateConnectionaAsync(packet))
+        var result = await session.ValidateConnectionaAsync(new ValidatingConnectionResult(packet));
+
+        if (result.ReasonCode != MQTTConnectReasonCode.Success)
         {
+            response.ReasonCode = result.ReasonCode;
             return response;
         }
 

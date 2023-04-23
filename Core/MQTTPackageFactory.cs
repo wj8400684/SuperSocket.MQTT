@@ -1,11 +1,10 @@
-﻿using Package;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Core;
 
-public sealed class MQTTPackageFactory<TPackage> : 
-    IMQTTPackageFactory where TPackage : 
-    MQTTPackage, new ()
+public sealed class MQTTPackageFactory<TPackage> :
+    IMQTTPackageFactory where TPackage :
+    MQTTPackage, new()
 {
     private const int DefaultMaxCount = 10;
     private readonly ConcurrentQueue<MQTTPackage> _packagePool = new();
@@ -20,7 +19,11 @@ public sealed class MQTTPackageFactory<TPackage> :
 
             _packagePool.Enqueue(packet);
         }
+
+        PackageType = typeof(TPackage);
     }
+
+    public Type PackageType { get; private set; }
 
     public MQTTPackage Create()
     {

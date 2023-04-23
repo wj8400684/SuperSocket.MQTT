@@ -9,6 +9,8 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
 
     public MQTTCommand Key { get; }
 
+    public byte FixedHeader { get; set; }
+
     protected MQTTPackage(MQTTCommand key)
     {
         Key = key;
@@ -25,6 +27,7 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
 
     public virtual void Dispose()
     {
+        FixedHeader = 0;
         _packetFactory?.Return(this);
     }
 

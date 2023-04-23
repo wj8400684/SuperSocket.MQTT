@@ -7,23 +7,26 @@ namespace Core;
 
 internal static class SequenceReaderExtensions
 {
-    private static bool TryReadReverseEndianness(ref SequenceReader<byte> reader, out ushort value)
-    {
-        if (reader.TryRead(out value))
-        {
-            value = BinaryPrimitives.ReverseEndianness(value);
-            return true;
-        }
-
-        return false;
-    }
-
     public static bool TryReadBigEndian(this ref SequenceReader<byte> reader, out ushort value)
     {
-        if (!BitConverter.IsLittleEndian)
-            return reader.TryRead(out value);
+        const int length = sizeof(ushort);
 
-        return TryReadReverseEndianness(ref reader, out value);
+        value = 0;
+
+        try
+        {
+            var span = reader.UnreadSpan[..length];
+            value = BinaryPrimitives.ReadUInt16BigEndian(span);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        finally
+        {
+            reader.Advance(length);
+        }
     }
 
     public static byte[] ReadBinaryData(this ref SequenceReader<byte> reader)

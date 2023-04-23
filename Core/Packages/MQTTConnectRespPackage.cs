@@ -4,7 +4,7 @@ namespace Core;
 
 public sealed class MQTTConnectRespPackage : MQTTPackage
 {
-    public MQTTConnectRespPackage() : base(MQTTCommand.ConnectAck)
+    public MQTTConnectRespPackage() : base(MQTTCommand.ConnAck)
     {
     }
 
@@ -59,7 +59,23 @@ public sealed class MQTTConnectRespPackage : MQTTPackage
 
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
-        throw new NotImplementedException();
+        byte connectAcknowledgeFlags = 0x0;
+        if (IsSessionPresent)
+            connectAcknowledgeFlags |= 0x1;
+
+        var length = writer.Write(connectAcknowledgeFlags);
+        length += writer.Write((byte)ReturnCode);
+
+        return length;
+    }
+
+    protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
+    {
+        reader.TryRead(out var acknowledgeFlags);
+        IsSessionPresent = (acknowledgeFlags & 0x1) > 0;
+
+        reader.TryRead(out var returnCode);
+        ReturnCode = (MQTTConnectReturnCode)returnCode;
     }
 
     public override void Dispose()
@@ -85,15 +101,5 @@ public sealed class MQTTConnectRespPackage : MQTTPackage
         UserProperties = default;
         WildcardSubscriptionAvailable = default;
         base.Dispose();
-    }
-
-    public override string ToString()
-    {
-        return $"ConnAck: [ReturnCode={ReturnCode}] [ReasonCode={ReasonCode}] [IsSessionPresent={IsSessionPresent}]";
-    }
-
-    protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
-    {
-        throw new NotImplementedException();
     }
 }

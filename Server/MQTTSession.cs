@@ -17,11 +17,31 @@ public class MQTTSession : AppSession
         ConnectionToken = _tokenSource.Token;
     }
 
-    public string? ClientId { get; set; }
+    #region property
 
+    /// <summary>
+    /// 客户端id
+    /// </summary>
+    public string? ClientId { get; internal set; }
+
+    /// <summary>
+    /// 远程地址
+    /// </summary>
     public string RemoteAddress { get; private set; } = default!;
 
+    /// <summary>
+    /// 连接token
+    /// </summary>
     public CancellationToken ConnectionToken { get; private set; }
+
+    /// <summary>
+    /// 客户端连接时间
+    /// </summary>
+    public DateTime CreatedTimestamp { get; private set; }
+
+    #endregion
+
+    #region protected
 
     protected override ValueTask OnSessionConnectedAsync()
     {
@@ -32,14 +52,41 @@ public class MQTTSession : AppSession
 
     protected override ValueTask OnSessionClosedAsync(CloseEventArgs e)
     {
+        _tokenSource.Cancel();
+        _tokenSource.Dispose();
+
         return base.OnSessionClosedAsync(e);
     }
 
-    public ValueTask<bool> ValidateConnectionaAsync(MQTTConnectPackage package)
+    #endregion
+
+    #region public
+
+    /// <summary>
+    /// 验证连接
+    /// </summary>
+    /// <param name="result"></param>
+    /// <returns></returns>
+    public virtual ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result)
     {
-        return ValueTask.FromResult(false);
+        CreatedTimestamp = DateTime.UtcNow;
+        return ValueTask.FromResult(result);
     }
 
+    /// <summary>
+    /// 客户端连接成功
+    /// </summary>
+    /// <returns></returns>
+    public virtual ValueTask ClientConnectedAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// 发送包
+    /// </summary>
+    /// <param name="package"></param>
+    /// <returns></returns>
     public ValueTask SendPackageAsync(MQTTPackage package)
     {
         if (Channel.IsClosed)
@@ -47,4 +94,6 @@ public class MQTTSession : AppSession
 
         return Channel.SendAsync(_encoder, package);
     }
+
+    #endregion
 }

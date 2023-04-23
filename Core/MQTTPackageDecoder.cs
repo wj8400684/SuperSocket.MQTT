@@ -1,5 +1,4 @@
-﻿using Package;
-using SuperSocket.ProtoBase;
+﻿using SuperSocket.ProtoBase;
 using System.Buffers;
 
 namespace Core;
@@ -21,9 +20,10 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
 
         var command = (MQTTCommand)(firstByte >> 4);
 
-        var packetFactory = _packageFactoryPool.Get(command);
+        var packageFactory = _packageFactoryPool.Get(command);
 
-        var packet = packetFactory.Create();
+        var package = packageFactory.Create();
+        package.FixedHeader = firstByte;
 
         while (true)
         {
@@ -38,7 +38,7 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
                 break;
         }
 
-        packet.DecodeBody(ref reader, context);
-        return packet;
+        package.DecodeBody(ref reader, context);
+        return package;
     }
 }
