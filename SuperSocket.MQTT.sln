@@ -7,6 +7,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{39A8075E-C737-4AD2-9CFD-4E9910AA4A4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MQTTServer.Abp", "MQTTServer.Abp\MQTTServer.Abp.csproj", "{0A528370-4F12-480E-B970-9B154F586C4D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4BED9A20-69D5-4678-85D8-7CF0A2A6C29A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperSocket.Kestrel.Channel", "E:\dotnet\git\SuperSocket.Kestrel\SuperSocket.Kestrel.Channel\SuperSocket.Kestrel.Channel.csproj", "{11233AEB-F322-4089-AD85-2F1E30ADF1A4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperSocket.Kestrel.IOCP", "E:\dotnet\git\SuperSocket.Kestrel\SuperSocket.Kestrel.IOCP\SuperSocket.Kestrel.IOCP.csproj", "{5058D46B-CA64-41A4-A2F7-61794F2C8867}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperSocket.Kestrel", "E:\dotnet\git\SuperSocket.Kestrel\SuperSocket.Kestrel\SuperSocket.Kestrel.csproj", "{92E6EC56-E145-4C5B-B4FE-621616B6DAF7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "kestrel", "kestrel", "{76605AF0-8419-4F80-86B3-14C023A90DF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +33,32 @@ Global
 		{39A8075E-C737-4AD2-9CFD-4E9910AA4A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39A8075E-C737-4AD2-9CFD-4E9910AA4A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39A8075E-C737-4AD2-9CFD-4E9910AA4A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A528370-4F12-480E-B970-9B154F586C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A528370-4F12-480E-B970-9B154F586C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A528370-4F12-480E-B970-9B154F586C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A528370-4F12-480E-B970-9B154F586C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11233AEB-F322-4089-AD85-2F1E30ADF1A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11233AEB-F322-4089-AD85-2F1E30ADF1A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11233AEB-F322-4089-AD85-2F1E30ADF1A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11233AEB-F322-4089-AD85-2F1E30ADF1A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5058D46B-CA64-41A4-A2F7-61794F2C8867}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5058D46B-CA64-41A4-A2F7-61794F2C8867}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5058D46B-CA64-41A4-A2F7-61794F2C8867}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5058D46B-CA64-41A4-A2F7-61794F2C8867}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92E6EC56-E145-4C5B-B4FE-621616B6DAF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92E6EC56-E145-4C5B-B4FE-621616B6DAF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92E6EC56-E145-4C5B-B4FE-621616B6DAF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92E6EC56-E145-4C5B-B4FE-621616B6DAF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A70012A-A7A4-41E3-AA84-78C1259DA052} = {4BED9A20-69D5-4678-85D8-7CF0A2A6C29A}
+		{39A8075E-C737-4AD2-9CFD-4E9910AA4A4D} = {4BED9A20-69D5-4678-85D8-7CF0A2A6C29A}
+		{11233AEB-F322-4089-AD85-2F1E30ADF1A4} = {76605AF0-8419-4F80-86B3-14C023A90DF6}
+		{5058D46B-CA64-41A4-A2F7-61794F2C8867} = {76605AF0-8419-4F80-86B3-14C023A90DF6}
+		{92E6EC56-E145-4C5B-B4FE-621616B6DAF7} = {76605AF0-8419-4F80-86B3-14C023A90DF6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6725389-87F4-4105-9B25-97756854AC25}
