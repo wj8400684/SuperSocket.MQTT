@@ -1,5 +1,4 @@
 using Core;
-using Microsoft.Extensions.DependencyInjection;
 using Server.Internal;
 using SuperSocket.Channel;
 using SuperSocket.ProtoBase;
