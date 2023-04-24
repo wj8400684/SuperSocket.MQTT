@@ -21,7 +21,7 @@ public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQ
         }
         catch (Exception e)
         {
-            session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
+            session.LogError(e, $"{session.RemoteAddress}-{package}-{e.Message}");
         }
         finally
         {
@@ -29,7 +29,7 @@ public abstract class MQTTAsyncCommand<TPackage> : IAsyncCommand<MQTTSession, MQ
         }
     }
 
-    protected abstract ValueTask ExecuteAsync(MQTTSession session, MQTTPackage packet, CancellationToken
+    protected abstract ValueTask ExecuteAsync(MQTTSession session, TPackage package, CancellationToken
         cancellationToken);
 }
 
@@ -37,15 +37,15 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
     where TPackage : MQTTPackage
     where TRespPackage : MQTTPackage
 {
-    private readonly IMQTTPackageFactory _packetFactory;
-
+    private readonly IMQTTPackageFactory _responseFactory;
+    
     public MQTTAsyncCommand(IMQTTPackageFactoryPool packetFactoryPool)
     {
-        _packetFactory = packetFactoryPool.Get<TRespPackage>();
+        _responseFactory = packetFactoryPool.Get<TRespPackage>();
     }
 
-    protected TRespPackage CreateResponse() => (TRespPackage)_packetFactory.Create();
-
+    protected TRespPackage CreateResponse() => (TRespPackage)_responseFactory.Create();
+    
     ValueTask IAsyncCommand<MQTTSession, MQTTPackage>.ExecuteAsync(MQTTSession session, MQTTPackage package) =>
         SchedulerAsync(session, package, session.ConnectionToken);
 
@@ -62,7 +62,7 @@ public abstract class MQTTAsyncCommand<TPackage, TRespPackage> : IAsyncCommand<M
         }
         catch (Exception e)
         {
-            session.LogError(e, $"{session.RemoteAddress}-{package.Key} 抛出一个未知异常");
+            session.LogError(e, $"{session.RemoteAddress}-{package}-{e.Message}");
         }
         finally
         {

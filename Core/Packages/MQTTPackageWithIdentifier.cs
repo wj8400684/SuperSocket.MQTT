@@ -20,7 +20,7 @@ public abstract class MQTTPackageWithIdentifier : MQTTPackage
 
     protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
     {
-        reader.TryReadBigEndian(out var packetIdentifier);
+        reader.TryReadBigEndian(out ushort packetIdentifier);
         PacketIdentifier = packetIdentifier;
     }
 

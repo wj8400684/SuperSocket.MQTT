@@ -4,6 +4,7 @@ using SuperSocket.Channel;
 using SuperSocket.ProtoBase;
 using SuperSocket.Server;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Server;
 
@@ -13,6 +14,7 @@ public class MQTTSession : AppSession
     private readonly TaskPacketScheduler _taskScheduler;
     private readonly CancellationTokenSource _tokenSource = new();
     private readonly MQTTSubscriptionsManager _subscriptionsManager;
+    private readonly Dictionary<ushort, string> _topicAlias = new();
 
     public MQTTSession(IPackageEncoder<MQTTPackage> encoder)
     {
@@ -24,24 +26,12 @@ public class MQTTSession : AppSession
 
     #region property
 
-    /// <summary>
-    /// 客户端id
-    /// </summary>
     public string? ClientId { get; internal set; }
 
-    /// <summary>
-    /// 远程地址
-    /// </summary>
     public string RemoteAddress { get; private set; } = default!;
 
-    /// <summary>
-    /// 连接token
-    /// </summary>
     public CancellationToken ConnectionToken { get; private set; }
 
-    /// <summary>
-    /// 客户端连接时间
-    /// </summary>
     public DateTime CreatedTimestamp { get; private set; }
 
     #endregion
@@ -62,31 +52,18 @@ public class MQTTSession : AppSession
         _tokenSource.Dispose();
         _subscriptionsManager.Dispose();
 
-        return base.OnSessionClosedAsync(e);
+        return ValueTask.CompletedTask;
     }
 
-    #endregion
-
-    #region public
-
-    /// <summary>
-    /// 验证连接
-    /// </summary>
-    /// <param name="result"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public virtual ValueTask<ValidatingConnectionResult> ValidateConnectionaAsync(ValidatingConnectionResult result, CancellationToken cancellationToken)
+    protected virtual ValueTask<ValidatingConnectionResult> OnValidateConnectedAsync(
+        ValidatingConnectionResult result,
+        CancellationToken cancellationToken)
     {
-        CreatedTimestamp = DateTime.UtcNow;
+        result.ReasonCode = MQTTConnectReasonCode.Success;
         return ValueTask.FromResult(result);
     }
 
-    /// <summary>
-    /// 客户端连接成功
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public virtual ValueTask ClientConnectedAsync(CancellationToken cancellationToken)
+    protected virtual ValueTask OnClientConnectedAsync(CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
@@ -95,11 +72,54 @@ public class MQTTSession : AppSession
 
     #region internal
 
-    /// <summary>
-    /// 添加到任务调度
-    /// </summary>
-    /// <param name="package"></param>
-    /// <param name="task"></param>
+    internal async ValueTask<ValidatingConnectionResult> ValidateConnectedAsync(ValidatingConnectionResult result,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            CreatedTimestamp = DateTime.UtcNow;
+            return await OnValidateConnectedAsync(result, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            this.Logger.LogError(e, "");
+        }
+
+        return result;
+    }
+
+    internal async ValueTask ClientConnectedAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await OnClientConnectedAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            this.Logger.LogError(e, "");
+        }
+    }
+
+    internal void HandleTopicAlias(MQTTPublishPackage publishPackage)
+    {
+        if (publishPackage.TopicAlias == 0)
+            return;
+
+        lock (_topicAlias)
+        {
+            if (!string.IsNullOrEmpty(publishPackage.Topic))
+                _topicAlias[publishPackage.TopicAlias] = publishPackage.Topic;
+            else
+            {
+                if (_topicAlias.TryGetValue(publishPackage.TopicAlias, out var topic))
+                    publishPackage.Topic = topic;
+                else
+                    Logger.LogWarning("Client '{0}': Received invalid topic alias ({1})", ClientId, publishPackage
+                    .TopicAlias);
+            }
+        }
+    }
+
     internal ValueTask SchedulerAsync(MQTTPackage package,
         Func<MQTTSession, MQTTPackage, CancellationToken, ValueTask> task)
     {
@@ -108,17 +128,9 @@ public class MQTTSession : AppSession
         return ValueTask.CompletedTask;
     }
 
-    /// <summary>
-    /// 发送包
-    /// </summary>
-    /// <param name="package"></param>
-    /// <returns></returns>
     internal ValueTask SendPackageAsync(MQTTPackage package)
     {
-        if (Channel.IsClosed)
-            return ValueTask.CompletedTask;
-
-        return Channel.SendAsync(_encoder, package);
+        return Channel.IsClosed ? ValueTask.CompletedTask : Channel.SendAsync(_encoder, package);
     }
 
     #endregion

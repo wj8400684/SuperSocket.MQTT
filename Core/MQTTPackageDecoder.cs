@@ -16,16 +16,18 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
     {
         var reader = new SequenceReader<byte>(buffer);
 
-        reader.TryRead(out byte firstByte);
+        reader.TryRead(out var fixedHeader);//固定字节
 
-        var command = (MQTTCommand)(firstByte >> 4);
+        var command = (MQTTCommand)(fixedHeader >> 4);
 
         var packageFactory = _packageFactoryPool.Get(command);
 
         var package = packageFactory.Create();
-        package.FixedHeader = firstByte;
+        
+        package.FixedHeader = fixedHeader;
 
-        int lenSize;
+        //可变字节
+        var lenSize = 0;
 
         while (true)
         {
@@ -33,6 +35,7 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
                 break;
 
             lenSize = +1;
+
             if ((lenByte & 0x80) != 0x80)
                 break;
 

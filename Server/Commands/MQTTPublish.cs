@@ -17,8 +17,7 @@ public sealed class MQTTPublish : MQTTAsyncCommand<MQTTPublishPackage, MQTTPubRe
 
     protected override async ValueTask<MQTTPubRecPackage?> ExecuteAsync(MQTTSession session, MQTTPublishPackage package, CancellationToken cancellationToken)
     {
-        if (package.TopicAlias == 0)
-            return null;
+        session.HandleTopicAlias(package);
 
         MQTTPubRecPackage? response = null;
 

@@ -93,21 +93,27 @@ internal static class BufferWriterExtensions
     }
 
     /// <summary>
-    /// 写入字符串
+    /// 写入带有字符串长度的字符串
+    /// (ushort)bodyLength body
     /// </summary>
     /// <param name="writer"></param>
     /// <param name="value"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int WriteLengthEncodedString(this IBufferWriter<byte> writer, string value)
+    public static int WriteEncoderString(this IBufferWriter<byte> writer, string value)
     {
         const int size = sizeof(ushort);
 
+        //申请2子字节缓冲区
         var buffer = writer.GetSpan(size);
+        
+        //跳过
         writer.Advance(size);
 
+        //写入字符串
         var length = writer.Write(value, Encoding.UTF8);
 
+        //写入字符串长度
         BinaryPrimitives.WriteUInt16BigEndian(buffer, (ushort)length);
 
         return size + length;

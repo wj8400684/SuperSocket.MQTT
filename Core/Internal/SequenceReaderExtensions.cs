@@ -35,14 +35,11 @@ internal static class SequenceReaderExtensions
         return reader.UnreadSequence.Slice(0, binaryDataLength).ToArray();
     }
 
-    public static string ReadLengthEncodedString(this ref SequenceReader<byte> reader)
+    public static string ReadEncoderString(this ref SequenceReader<byte> reader)
     {
         reader.TryReadBigEndian(out ushort length);
 
-        if (length == 0)
-            return string.Empty;
-
-        return reader.ReadString(length, Encoding.UTF8);
+        return length == 0 ? string.Empty : reader.ReadString(length, Encoding.UTF8);
     }
 
     public static string ReadString(this ref SequenceReader<byte> reader, int length, Encoding encoding)

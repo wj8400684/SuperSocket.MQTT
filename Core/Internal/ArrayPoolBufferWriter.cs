@@ -74,7 +74,6 @@ public sealed class ArrayPoolBufferWriter<T> : IWrittenBufferWriter<T>, IDisposa
     /// </summary>
     public int FreeCapacity => _buffer.Length - _index;
 
-
     /// <summary>
     /// 基于ArrayPool的BufferWriter
     /// </summary>
@@ -165,11 +164,12 @@ public sealed class ArrayPoolBufferWriter<T> : IWrittenBufferWriter<T>, IDisposa
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CheckAndResizeBuffer(int sizeHint)
     {
-        if (sizeHint < 0)
-            throw new ArgumentOutOfRangeException(nameof(sizeHint));
-
-        if (sizeHint == 0)
-            sizeHint = DefaultSizeHint;
+        sizeHint = sizeHint switch
+        {
+            < 0 => throw new ArgumentOutOfRangeException(nameof(sizeHint)),
+            0 => DefaultSizeHint,
+            _ => sizeHint
+        };
 
         if (sizeHint <= FreeCapacity)
             return;

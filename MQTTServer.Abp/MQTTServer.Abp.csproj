@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Server\Server.csproj" />
-    <ProjectReference Include="E:\dotnet\git\SuperSocket.Kestrel\SuperSocket.Kestrel.Channel\SuperSocket.Kestrel.Channel.csproj" />
   </ItemGroup>
 
 </Project>

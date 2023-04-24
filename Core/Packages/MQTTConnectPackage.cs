@@ -71,7 +71,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
     {
         const string MQIsdp = "MQIsdp";
 
-        var protocolName = reader.ReadLengthEncodedString();
+        var protocolName = reader.ReadEncoderString();
 
         if (protocolName != MQTT && protocolName != MQIsdp)
             throw new MQTTProtocolViolationException("MQTT protocol name do not match MQTT v3.");
@@ -93,7 +93,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
         reader.TryReadBigEndian(out ushort keepAlivePeriod);
         KeepAlivePeriod = keepAlivePeriod;
-        ClientId = reader.ReadLengthEncodedString();
+        ClientId = reader.ReadEncoderString();
 
         var willFlag = (connectFlags & 0x4) > 0;
         var willQoS = (connectFlags & 0x18) >> 3;
@@ -107,12 +107,12 @@ public sealed class MQTTConnectPackage : MQTTPackage
             WillQoS = (MQTTQualityOfServiceLevel)willQoS;
             WillRetain = willRetain;
 
-            WillTopic = reader.ReadLengthEncodedString();
+            WillTopic = reader.ReadEncoderString();
             WillMessage = reader.ReadBinaryData();
         }
 
         if (usernameFlag)
-            Username = reader.ReadLengthEncodedString();
+            Username = reader.ReadEncoderString();
 
         if (passwordFlag)
             Password = reader.ReadBinaryData();
@@ -120,13 +120,11 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
-        const byte ProtocolVersion = 4; // 3.1.2.2 Protocol Level 4
-
         if (string.IsNullOrEmpty(ClientId) && !CleanSession)
             throw new MQTTProtocolViolationException("CleanSession must be set if ClientId is empty [MQTT-3.1.3-7].");
 
-        var length = writer.WriteLengthEncodedString(MQTT);
-        length += writer.Write(ProtocolVersion);
+        var length = writer.WriteEncoderString(MQTT);
+        length += writer.Write((byte)MQTTProtocolVersion.V311);
 
         byte connectFlags = 0x0;
         if (CleanSession)
@@ -152,16 +150,16 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
         length += writer.Write(connectFlags);
         length += writer.WriteBigEndian(KeepAlivePeriod);
-        length += writer.WriteLengthEncodedString(ClientId);
+        length += writer.WriteEncoderString(ClientId);
 
         if (WillFlag)
         {
-            length += writer.WriteLengthEncodedString(WillTopic);
+            length += writer.WriteEncoderString(WillTopic);
             length += writer.WriteBinaryData(WillMessage!);
         }
 
         if (Username != null)
-            length += writer.WriteLengthEncodedString(Username);
+            length += writer.WriteEncoderString(Username);
 
         if (Password != null)
             length += writer.WriteBinaryData(Password);
@@ -174,7 +172,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
         AuthenticationData = default;
         AuthenticationMethod = default;
         CleanSession = default;
-        ClientId = default;
+        ClientId = default!;
         WillCorrelationData = default;
         KeepAlivePeriod = default;
         MaximumPacketSize = default;
@@ -195,7 +193,7 @@ public sealed class MQTTConnectPackage : MQTTPackage
         WillPayloadFormatIndicator = default;
         WillQoS = default;
         WillRetain = default;
-        WillTopic = default;
+        WillTopic = default!;
         WillUserProperties = default;
         TryPrivate = default;
         base.Dispose();

@@ -9,12 +9,11 @@ using SuperSocket.ProtoBase;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AsSuperSocketHostBuilder<MQTTPackage, MQTTPipelineFilter>()
-            .UseSession<MQTTSession>()
             .UsePackageDecoder<MQTTPackageDecoder>()
+            .UseSessionFactory<MQTTSessionFactory>()
             .UseCommand(options => options.AddCommandAssembly(typeof(MQTTPublish).Assembly))
             .UseClearIdleSession()
             .UseInProcSessionContainer()
-            .UseChannelCreatorFactory<TcpIocpChannelWithKestrelCreatorFactory>()
             .AsMinimalApiHostBuilder()
             .ConfigureHostBuilder();
 
@@ -34,7 +33,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

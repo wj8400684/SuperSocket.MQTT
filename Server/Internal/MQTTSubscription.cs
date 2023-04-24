@@ -7,9 +7,9 @@ internal sealed class MQTTSubscription
     public MQTTSubscription(
         string topic,
         bool noLocal,
-        MqttRetainHandling retainHandling,
+        MQTTRetainHandling retainHandling,
         bool retainAsPublished,
-        MqttQualityOfServiceLevel qualityOfServiceLevel,
+        MQTTQualityOfServiceLevel qualityOfServiceLevel,
         uint identifier)
     {
         Topic = topic;
@@ -19,10 +19,10 @@ internal sealed class MQTTSubscription
         GrantedQualityOfServiceLevel = qualityOfServiceLevel;
         Identifier = identifier;
 
-        MqttTopicHash.Calculate(Topic, out var hash, out var hashMask, out var hasWildcard);
-        TopicHash = hash;
-        TopicHashMask = hashMask;
-        TopicHasWildcard = hasWildcard;
+        //MqttTopicHash.Calculate(Topic, out var hash, out var hashMask, out var hasWildcard);
+        // TopicHash = hash;
+        // TopicHashMask = hashMask;
+        // TopicHasWildcard = hasWildcard;
     }
 
     public MQTTQualityOfServiceLevel GrantedQualityOfServiceLevel { get; }

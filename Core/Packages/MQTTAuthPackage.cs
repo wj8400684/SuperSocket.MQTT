@@ -7,7 +7,7 @@ namespace Core;
 /// </summary>
 public sealed class MQTTAuthPackage : MQTTPackage
 {
-    public MQTTAuthPackage() : base(MQTTCommand.Ping)
+    public MQTTAuthPackage() : base(MQTTCommand.Auth)
     {
     }
 
@@ -39,10 +39,5 @@ public sealed class MQTTAuthPackage : MQTTPackage
         ReasonString = default;
         UserProperties = default;
         base.Dispose();
-    }
-
-    public override string ToString()
-    {
-        return "PingReq";
     }
 }

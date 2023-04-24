@@ -4,8 +4,11 @@ namespace Core;
 
 public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
 {
+    private const byte DefaultFixedHeader = 0x02;
+    
     public MQTTSubscribePackage() : base(MQTTCommand.Subscribe)
     {
+        FixedHeader = DefaultFixedHeader;
     }
 
     /// <summary>
@@ -29,7 +32,7 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
 
         foreach (var topicFilter in TopicFilters)
         {
-            length += writer.WriteLengthEncodedString(topicFilter.Topic);
+            length += writer.WriteEncoderString(topicFilter.Topic);
             length += writer.Write((byte)topicFilter.QualityOfServiceLevel);
         }
 
@@ -42,7 +45,8 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
 
         while (!reader.End)
         {
-            var topic = reader.ReadLengthEncodedString();
+            var topic = reader.ReadEncoderString();
+
             reader.TryRead(out var qualityOfServiceLevel);
 
             TopicFilters.Add(new MQTTTopicFilter

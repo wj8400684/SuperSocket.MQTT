@@ -36,10 +36,11 @@ public sealed class MQTTPublishPackage : MQTTPackageWithIdentifier
 
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
-        var length = writer.WriteLengthEncodedString(Topic);
+        var length = writer.WriteEncoderString(Topic);
 
         if (QualityOfServiceLevel > MQTTQualityOfServiceLevel.AtMostOnce)
         {
+            //解析包id
             length += base.EncodeBody(writer);
         }
         else
@@ -72,7 +73,7 @@ public sealed class MQTTPublishPackage : MQTTPackageWithIdentifier
         var qualityOfServiceLevel = (MQTTQualityOfServiceLevel)((FixedHeader >> 1) & 0x3);
         var dup = (FixedHeader & 0x8) > 0;
 
-        var topic = reader.ReadLengthEncodedString();
+        var topic = reader.ReadEncoderString();
 
         if (qualityOfServiceLevel > MQTTQualityOfServiceLevel.AtMostOnce)
             base.DecodeBody(ref reader, context);

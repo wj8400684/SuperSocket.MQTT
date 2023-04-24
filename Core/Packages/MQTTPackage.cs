@@ -16,14 +16,22 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
         Key = key;
     }
 
-    public virtual void Initialization(IMQTTPackageFactory factory)
-    {
-        _packetFactory = factory;
-    }
-
     protected internal abstract void DecodeBody(ref SequenceReader<byte> reader, object context);
 
     public abstract int EncodeBody(IBufferWriter<byte> writer);
+
+    internal virtual byte BuildFixedHeader()
+    {
+        var fixedHeader = (int)Key << 4;
+        fixedHeader |= FixedHeader;
+
+        return (byte)fixedHeader;
+    }
+    
+    internal virtual void Initialization(IMQTTPackageFactory factory)
+    {
+        _packetFactory = factory;
+    }
 
     public virtual void Dispose()
     {

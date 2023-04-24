@@ -4,8 +4,11 @@ namespace Core;
 
 public sealed class MQTTUnsubscribePackage : MQTTPackageWithIdentifier
 {
+    private const byte DefaultFixedHeader = 0x02;
+    
     public MQTTUnsubscribePackage() : base(MQTTCommand.Unsubscribe)
     {
+        FixedHeader = DefaultFixedHeader;
     }
 
     public List<string> TopicFilters { get; set; } = new();
@@ -22,11 +25,8 @@ public sealed class MQTTUnsubscribePackage : MQTTPackageWithIdentifier
 
         var length = base.EncodeBody(writer);
 
-        if (!TopicFilters.Any())
-            return length;
-
         foreach (var topic in TopicFilters)
-            length += writer.WriteLengthEncodedString(topic);
+            length += writer.WriteEncoderString(topic);
 
         return length;
     }
@@ -37,7 +37,7 @@ public sealed class MQTTUnsubscribePackage : MQTTPackageWithIdentifier
 
         while (!reader.End)
         {
-            var topic = reader.ReadLengthEncodedString();
+            var topic = reader.ReadEncoderString();
 
             TopicFilters.Add(topic);
         }

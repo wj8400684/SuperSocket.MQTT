@@ -9,7 +9,7 @@ public sealed class MQTTCommandAttribute : CommandAttribute
 
     public MQTTCommandAttribute(MQTTCommand key)
     {
-        Key = (byte)key;
+        Key = (int)key;
         Command = key;
     }
 }
