@@ -23,6 +23,25 @@ public sealed class MQTTSubscribePackage : MQTTPackageWithIdentifier
     /// </summary>
     public List<MQTTUserProperty>? UserProperties { get; set; }
 
+    public override int CalculateSize()
+    {
+        const int StringSize = 2;
+        const int QualityOfServiceLevelSize = 1;
+
+        if (!TopicFilters.Any())
+            throw new MQTTProtocolViolationException("At least one topic filter must be set [MQTT-3.8.3-3].");
+
+        var size = base.CalculateSize();
+
+        foreach (var topicFilter in TopicFilters)
+        {
+            size += StringSize + topicFilter.Topic.AsSpan().Length;
+            size += QualityOfServiceLevelSize;
+        }
+
+        return size;
+    }
+
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
         if (!TopicFilters.Any())

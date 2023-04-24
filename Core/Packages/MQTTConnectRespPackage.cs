@@ -57,6 +57,13 @@ public sealed class MQTTConnectRespPackage : MQTTPackage
 
     public bool WildcardSubscriptionAvailable { get; set; }
 
+    public override int CalculateSize()
+    {
+        const int RemainingSize = 2;
+
+        return RemainingSize;
+    }
+
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
         byte connectAcknowledgeFlags = 0x0;

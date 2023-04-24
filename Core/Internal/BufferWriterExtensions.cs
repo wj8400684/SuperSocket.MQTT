@@ -93,6 +93,35 @@ internal static class BufferWriterExtensions
     }
 
     /// <summary>
+    /// 写入可变字节
+    /// </summary>
+    /// <param name="writer"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int WriteVariable(this IBufferWriter<byte> writer, int value)
+    {
+        const int v1 = 128;
+        const int v2 = 0x80;
+        var length = 0;
+
+        do
+        {
+            var encodedByte = value % v1;
+
+            value /= v1;
+            if (value > 0)
+                encodedByte |= v2;
+
+            length++;
+            writer.Write((byte)encodedByte);
+        }
+        while (value > 0);
+
+        return length;
+    }
+
+    /// <summary>
     /// 写入带有字符串长度的字符串
     /// (ushort)bodyLength body
     /// </summary>

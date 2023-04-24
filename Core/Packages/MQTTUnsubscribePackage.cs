@@ -5,7 +5,7 @@ namespace Core;
 public sealed class MQTTUnsubscribePackage : MQTTPackageWithIdentifier
 {
     private const byte DefaultFixedHeader = 0x02;
-    
+
     public MQTTUnsubscribePackage() : base(MQTTCommand.Unsubscribe)
     {
         FixedHeader = DefaultFixedHeader;
@@ -17,6 +17,21 @@ public sealed class MQTTUnsubscribePackage : MQTTPackageWithIdentifier
     ///     Added in MQTTv5.
     /// </summary>
     public List<MQTTUserProperty>? UserProperties { get; set; }
+
+    public override int CalculateSize()
+    {
+        const int StringSize = 2;
+
+        if (!TopicFilters.Any())
+            throw new MQTTProtocolViolationException("At least one topic filter must be set [MQTT-3.10.3-2].");
+
+        var size = base.CalculateSize();
+
+        foreach (var topic in TopicFilters)
+            size += StringSize + topic.AsSpan().Length;
+
+        return size;
+    }
 
     public override int EncodeBody(IBufferWriter<byte> writer)
     {

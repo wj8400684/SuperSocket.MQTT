@@ -75,14 +75,15 @@ public class MQTTSession : AppSession
     internal async ValueTask<ValidatingConnectionResult> ValidateConnectedAsync(ValidatingConnectionResult result,
         CancellationToken cancellationToken)
     {
+        CreatedTimestamp = DateTime.UtcNow;
+
         try
         {
-            CreatedTimestamp = DateTime.UtcNow;
             return await OnValidateConnectedAsync(result, cancellationToken);
         }
         catch (Exception e)
         {
-            this.Logger.LogError(e, "");
+            Logger.LogError(e, "");
         }
 
         return result;
@@ -96,7 +97,7 @@ public class MQTTSession : AppSession
         }
         catch (Exception e)
         {
-            this.Logger.LogError(e, "");
+            Logger.LogError(e, "");
         }
     }
 

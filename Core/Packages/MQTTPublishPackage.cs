@@ -34,6 +34,27 @@ public sealed class MQTTPublishPackage : MQTTPackageWithIdentifier
 
     public List<MQTTUserProperty>? UserProperties { get; set; }
 
+    public override int CalculateSize()
+    {
+        const int StringSize = 2;
+
+        var size = 0;
+
+        if (!string.IsNullOrWhiteSpace(Topic))
+        {
+            size += StringSize;
+            size += Topic.AsSpan().Length;
+        }
+
+        if (QualityOfServiceLevel > MQTTQualityOfServiceLevel.AtMostOnce)
+            size += base.CalculateSize();
+
+        if (PayloadSegment != null)
+            size += PayloadSegment.Value.Count;
+
+        return size;
+    }
+
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
         var length = writer.WriteEncoderString(Topic);

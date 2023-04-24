@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using SuperSocket.ProtoBase;
 
 namespace Core;
@@ -16,21 +17,19 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
         Key = key;
     }
 
+    #region protected
+
     protected internal abstract void DecodeBody(ref SequenceReader<byte> reader, object context);
+
+    #endregion
+
+    #region public
 
     public abstract int EncodeBody(IBufferWriter<byte> writer);
 
-    internal virtual byte BuildFixedHeader()
+    public virtual int CalculateSize()
     {
-        var fixedHeader = (int)Key << 4;
-        fixedHeader |= FixedHeader;
-
-        return (byte)fixedHeader;
-    }
-    
-    internal virtual void Initialization(IMQTTPackageFactory factory)
-    {
-        _packetFactory = factory;
+        return 0;//FixedHeader
     }
 
     public virtual void Dispose()
@@ -43,4 +42,23 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
     {
         return System.Text.Json.JsonSerializer.Serialize(this, GetType());
     }
+
+    #endregion
+
+    #region internal
+
+    internal virtual byte BuildFixedHeader()
+    {
+        var fixedHeader = (int)Key << 4;
+        fixedHeader |= FixedHeader;
+
+        return (byte)fixedHeader;
+    }
+
+    internal virtual void Initialization(IMQTTPackageFactory factory)
+    {
+        _packetFactory = factory;
+    }
+
+    #endregion
 }

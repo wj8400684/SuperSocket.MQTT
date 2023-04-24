@@ -24,6 +24,13 @@ public abstract class MQTTPackageWithIdentifier : MQTTPackage
         PacketIdentifier = packetIdentifier;
     }
 
+    public override int CalculateSize()
+    {
+        const int PacketIdentifierSize = 2;
+
+        return PacketIdentifierSize;
+    }
+
     public override void Dispose()
     {
         PacketIdentifier = default;

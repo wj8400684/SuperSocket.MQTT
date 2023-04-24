@@ -23,6 +23,16 @@ public sealed class MQTTSubRespPackage : MQTTPackageWithIdentifier
     /// </summary>
     public List<MQTTUserProperty>? UserProperties { get; set; }
 
+    public override int CalculateSize()
+    {
+        var size = base.CalculateSize();
+
+        if (ReasonCodes == null || !ReasonCodes.Any())
+            return size;
+
+        return size + ReasonCodes.Count;
+    }
+
     public override int EncodeBody(IBufferWriter<byte> writer)
     {
         var length = base.EncodeBody(writer);

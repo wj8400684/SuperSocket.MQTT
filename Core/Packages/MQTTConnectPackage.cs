@@ -67,6 +67,38 @@ public sealed class MQTTConnectPackage : MQTTPackage
 
     public bool TryPrivate { get; set; }
 
+    public override int CalculateSize()
+    {
+        const int StringSize = 2;
+        const int ProtocolNameSize = 6;
+        const int ProtocolVersionSize = 1;
+        const int ConnectFlagsSize = 1;
+        const int KeepAlivePeriodSize = 2;
+
+        var size = ProtocolNameSize + 
+            ProtocolVersionSize +
+            ConnectFlagsSize + 
+            KeepAlivePeriodSize;
+
+        size += StringSize + ClientId.AsSpan().Length;
+
+        if (WillFlag)
+        {
+            size += StringSize + WillTopic.AsSpan().Length;
+
+            if (WillMessage != null)
+                size += WillMessage.Length;
+        }
+
+        if (Username != null)
+            size += StringSize + Username.AsSpan().Length;
+
+        if (Password != null)
+            size += StringSize + Password.Length;
+
+        return size;
+    }
+
     protected internal override void DecodeBody(ref SequenceReader<byte> reader, object context)
     {
         const string MQIsdp = "MQIsdp";
