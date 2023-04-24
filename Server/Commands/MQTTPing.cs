@@ -13,8 +13,11 @@ public sealed class MQTTPing : MQTTAsyncCommand<MQTTPingPackage, MQTTPingRespPac
     {
     }
 
-    protected override ValueTask<MQTTPingRespPackage?> ExecuteAsync(MQTTSession session, MQTTPingPackage package, CancellationToken cancellationToken)
+    protected override ValueTask<MQTTPingRespPackage?> ExecuteAsync(MQTTSession session, MQTTPingPackage package,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var response = CreateResponse();
+
+        return ValueTask.FromResult<MQTTPingRespPackage?>(response);
     }
 }

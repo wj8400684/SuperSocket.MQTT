@@ -11,7 +11,7 @@ public sealed class MQTTPackageFactory<TPackage> :
 
     public MQTTPackageFactory()
     {
-        for (int i = 0; i < DefaultMaxCount; i++)
+        for (var i = 0; i < DefaultMaxCount; i++)
         {
             var packet = new TPackage();
 
