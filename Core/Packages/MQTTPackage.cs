@@ -34,7 +34,6 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
 
     public virtual void Dispose()
     {
-        FixedHeader = 0;
         _packetFactory?.Return(this);
     }
 

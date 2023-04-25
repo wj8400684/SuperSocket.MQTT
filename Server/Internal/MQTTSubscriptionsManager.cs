@@ -16,6 +16,11 @@ internal sealed class MQTTSubscriptionsManager
     public async ValueTask<SubscribeResult> SubscribeAsync(MQTTSubscribePackage subscribePacket,
         CancellationToken cancellationToken)
     {
+        var result = new SubscribeResult(subscribePacket.TopicFilters.Count);
+
+        var addedSubscriptions = new List<string>();
+        var finalTopicFilters = new List<MQTTTopicFilter>();
+
         throw new NotImplementedException();
     }
 

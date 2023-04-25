@@ -5,6 +5,7 @@ using SuperSocket.ProtoBase;
 using SuperSocket.Server;
 using System.Net;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Server;
 
@@ -48,6 +49,11 @@ public class MQTTSession : AppSession
         RemoteAddress = ((IPEndPoint)RemoteEndPoint).Address.ToString();
 
         return ValueTask.CompletedTask;
+    }
+
+    protected override void Reset()
+    {
+        _subscriptionsManager = null;
     }
 
     protected override ValueTask OnSessionClosedAsync(CloseEventArgs e)
@@ -129,7 +135,7 @@ public class MQTTSession : AppSession
 
     internal ValueTask<SubscribeResult> SubscribeAsync(MQTTSubscribePackage package, CancellationToken cancellationToken)
     {
-        _subscriptionsManager = new MQTTSubscriptionsManager(this);
+        _subscriptionsManager ??= new MQTTSubscriptionsManager(this);
         return _subscriptionsManager.SubscribeAsync(package, cancellationToken);
     }
 

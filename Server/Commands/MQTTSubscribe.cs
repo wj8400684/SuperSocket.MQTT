@@ -15,6 +15,10 @@ public sealed class MQTTSubscribe : MQTTAsyncCommand<MQTTSubscribePackage, MQTTS
 
     protected override async ValueTask<MQTTSubRespPackage?> ExecuteAsync(MQTTSession session, MQTTSubscribePackage package, CancellationToken cancellationToken)
     {
+        var response = CreateResponse();
+
         await session.SubscribeAsync(package, cancellationToken);
+
+        return response;
     }
 }
