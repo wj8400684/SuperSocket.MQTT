@@ -2,10 +2,10 @@
 
 internal static class MQTTTopicFilterComparer
 {
-    public const char LevelSeparator = '/';
-    public const char MultiLevelWildcard = '#';
-    public const char SingleLevelWildcard = '+';
-    public const char ReservedTopicPrefix = '$';
+    private const char LevelSeparator = '/';
+    private const char MultiLevelWildcard = '#';
+    private const char SingleLevelWildcard = '+';
+    private const char ReservedTopicPrefix = '$';
 
     public static unsafe MQTTTopicFilterCompareResult Compare(string topic, string filter)
     {

@@ -25,6 +25,11 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
 
     #region public
 
+    public virtual void Initialization(IMQTTPackageFactory factory)
+    {
+        _packetFactory = factory;
+    }
+
     public abstract int EncodeBody(IBufferWriter<byte> writer);
 
     public virtual int CalculateSize()
@@ -52,11 +57,6 @@ public abstract class MQTTPackage : IKeyedPackageInfo<MQTTCommand>, IDisposable
         fixedHeader |= FixedHeader;
 
         return (byte)fixedHeader;
-    }
-
-    internal virtual void Initialization(IMQTTPackageFactory factory)
-    {
-        _packetFactory = factory;
     }
 
     #endregion
