@@ -2,7 +2,7 @@
 
 namespace Core;
 
-public sealed class MQTTPackageFactory<TPackage> :
+internal sealed class MQTTPackageFactory<TPackage> :
     IMQTTPackageFactory where TPackage :
     MQTTPackage, new()
 {

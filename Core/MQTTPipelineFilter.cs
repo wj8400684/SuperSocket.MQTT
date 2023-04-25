@@ -1,3 +1,4 @@
+using Server.Internal;
 using SuperSocket.ProtoBase;
 using System.Buffers;
 
@@ -19,16 +20,16 @@ public sealed class MQTTPipelineFilter : IPipelineFilter<MQTTPackage>
 
     public MQTTPackage Filter(ref SequenceReader<byte> reader)
     {
+        const int v1 = 0x80;
+        const int MaxVariablePartCount = 4;
+
         if (_currentLenUnit >= 0)
         {
             if (_headerParsed > 0)
                 reader.Advance(_headerParsed);
 
-            while (true)
+            while (reader.TryRead(out byte encodedByte))
             {
-                if (!reader.TryRead(out byte b))
-                    break;
-
                 _headerParsed++;
 
                 if (_currentLenUnit == 0)
@@ -37,17 +38,17 @@ public sealed class MQTTPipelineFilter : IPipelineFilter<MQTTPackage>
                 }
                 else
                 {
-                    var hasNext = (b & 0x80) == 0x80;
-                    _totalSize += (b & (0x80-1)) * _currentLenUnit;
+                    var hasNext = (encodedByte & v1) == v1;
+                    _totalSize += (encodedByte & (v1-1)) * _currentLenUnit;
 
-                    if (!hasNext || _headerParsed >= 4)
+                    if (!hasNext || _headerParsed >= MaxVariablePartCount)
                     {
                         _currentLenUnit = -1;
                         break;
                     }
                     else
                     {
-                        _currentLenUnit *= 0x80;
+                        _currentLenUnit *= v1;
                     }
                 }
             }

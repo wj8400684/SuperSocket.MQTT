@@ -103,18 +103,19 @@ internal static class BufferWriterExtensions
     {
         const int v1 = 128;
         const int v2 = 0x80;
+
+        int encodedByte;
         var length = 0;
 
         do
         {
-            var encodedByte = value % v1;
+            encodedByte = value % v1;
 
             value /= v1;
             if (value > 0)
                 encodedByte |= v2;
 
-            length++;
-            writer.Write((byte)encodedByte);
+            length += writer.Write((byte)encodedByte);
         }
         while (value > 0);
 
@@ -135,7 +136,7 @@ internal static class BufferWriterExtensions
 
         //申请2子字节缓冲区
         var buffer = writer.GetSpan(size);
-        
+
         //跳过
         writer.Advance(size);
 

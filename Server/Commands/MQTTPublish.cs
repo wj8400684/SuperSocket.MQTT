@@ -24,6 +24,7 @@ public sealed class MQTTPublish : MQTTAsyncCommand<MQTTPublishPackage, MQTTPubRe
         switch (package.QualityOfServiceLevel)
         {
             case MQTTQualityOfServiceLevel.AtMostOnce:
+                // Do nothing since QoS 0 has no ACK at all!
                 return null;
             case MQTTQualityOfServiceLevel.AtLeastOnce:
                 break;

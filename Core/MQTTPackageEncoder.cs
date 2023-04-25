@@ -1,5 +1,4 @@
 ﻿using SuperSocket.ProtoBase;
-using System;
 using System.Buffers;
 
 namespace Core;
@@ -19,10 +18,9 @@ public sealed class MQTTPackageEncoder : IPackageEncoder<MQTTPackage>
 
         #endregion
 
-        #region 写入可变长度
+        #region 写入可变长度 最长4字节最短一字节
 
         var variablePartSize = pack.CalculateSize();
-
         writerLength += writer.WriteVariable(variablePartSize);
 
         #endregion

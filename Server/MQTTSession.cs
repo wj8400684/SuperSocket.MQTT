@@ -10,25 +10,25 @@ namespace Server;
 
 public class MQTTSession : AppSession
 {
-    private readonly IPackageEncoder<MQTTPackage> _encoder;
-    private readonly TaskPacketScheduler _taskScheduler;
-    private readonly CancellationTokenSource _tokenSource = new();
-    private readonly MQTTSubscriptionsManager _subscriptionsManager;
-    private readonly Dictionary<ushort, string> _topicAlias = new();
+    private TaskPacketScheduler? _taskScheduler;
+    private CancellationTokenSource? _tokenSource;
+    private MQTTSubscriptionsManager? _subscriptionsManager;
 
-    public MQTTSession(IPackageEncoder<MQTTPackage> encoder)
+    private readonly IPackageEncoder<MQTTPackage> _encoder;
+    private readonly Dictionary<ushort, string> _topicAlias = new();
+    private readonly MQTTSubscriberSessionManager _subscriberSessionManager;
+
+    public MQTTSession(IPackageEncoder<MQTTPackage> encoder, MQTTSubscriberSessionManager subscriberSessionManager)
     {
         _encoder = encoder;
-        _taskScheduler = new TaskPacketScheduler(Logger);
-        _subscriptionsManager = new MQTTSubscriptionsManager(this);
-        ConnectionToken = _tokenSource.Token;
+        _subscriberSessionManager = subscriberSessionManager;
     }
 
     #region property
 
     public string? ClientId { get; internal set; }
 
-    public string RemoteAddress { get; private set; } = default!;
+    public string? RemoteAddress { get; private set; }
 
     public CancellationToken ConnectionToken { get; private set; }
 
@@ -40,7 +40,11 @@ public class MQTTSession : AppSession
 
     protected override ValueTask OnSessionConnectedAsync()
     {
+        _tokenSource = new CancellationTokenSource();
+        _taskScheduler = new TaskPacketScheduler(Logger);
         _taskScheduler.Start(_tokenSource.Token);
+   
+        ConnectionToken = _tokenSource.Token;
         RemoteAddress = ((IPEndPoint)RemoteEndPoint).Address.ToString();
 
         return ValueTask.CompletedTask;
@@ -48,9 +52,11 @@ public class MQTTSession : AppSession
 
     protected override ValueTask OnSessionClosedAsync(CloseEventArgs e)
     {
-        _tokenSource.Cancel();
-        _tokenSource.Dispose();
-        _subscriptionsManager.Dispose();
+        RemoteAddress = default;
+        _topicAlias.Clear();
+        _tokenSource?.Cancel();
+        _tokenSource?.Dispose();
+        _subscriptionsManager?.Dispose();
 
         return ValueTask.CompletedTask;
     }
@@ -59,7 +65,6 @@ public class MQTTSession : AppSession
         ValidatingConnectionResult result,
         CancellationToken cancellationToken)
     {
-        result.ReasonCode = MQTTConnectReasonCode.Success;
         return ValueTask.FromResult(result);
     }
 
@@ -76,6 +81,7 @@ public class MQTTSession : AppSession
         CancellationToken cancellationToken)
     {
         CreatedTimestamp = DateTime.UtcNow;
+        result.ReasonCode = MQTTConnectReasonCode.Success;
 
         try
         {
@@ -121,10 +127,16 @@ public class MQTTSession : AppSession
         }
     }
 
+    internal ValueTask<SubscribeResult> SubscribeAsync(MQTTSubscribePackage package, CancellationToken cancellationToken)
+    {
+        _subscriptionsManager = new MQTTSubscriptionsManager(this);
+        return _subscriptionsManager.SubscribeAsync(package, cancellationToken);
+    }
+
     internal ValueTask SchedulerAsync(MQTTPackage package,
         Func<MQTTSession, MQTTPackage, CancellationToken, ValueTask> task)
     {
-        _taskScheduler.Add(new TaskItem(this, package, task));
+        _taskScheduler?.Add(new TaskItem(this, package, task));
 
         return ValueTask.CompletedTask;
     }

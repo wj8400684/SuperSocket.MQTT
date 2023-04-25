@@ -1,25 +1,8 @@
-using SuperSocket;
-using Core;
 using Server;
-using SuperSocket.Command;
-using Server.Commands;
-using MQTTServer.Abp;
-using SuperSocket.ProtoBase;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.AsSuperSocketHostBuilder<MQTTPackage, MQTTPipelineFilter>()
-            .UsePackageDecoder<MQTTPackageDecoder>()
-            .UseSessionFactory<MQTTSessionFactory>()
-            .UseCommand(options => options.AddCommandAssembly(typeof(MQTTPublish).Assembly))
-            .UseClearIdleSession()
-            .UseInProcSessionContainer()
-            .AsMinimalApiHostBuilder()
-            .ConfigureHostBuilder();
-
-builder.Services.AddSingleton<IMQTTPackageFactoryPool, MQTTPackageFactoryPool>();
-builder.Services.AddSingleton<IPackageEncoder<MQTTPackage>, MQTTPackageEncoder>();
-
+builder.Host.AddMQTTServer();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

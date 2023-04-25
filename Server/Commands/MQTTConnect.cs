@@ -1,4 +1,5 @@
 using Core;
+using SuperSocket;
 
 namespace Server.Commands;
 
@@ -6,7 +7,7 @@ namespace Server.Commands;
 /// mqtt 连接命令
 /// </summary>
 [MQTTCommand(MQTTCommand.Connect)]
-public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConnectRespPackage>
+internal sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConnectRespPackage>
 {
     public MQTTConnect(IMQTTPackageFactoryPool packetFactoryPool)
         : base(packetFactoryPool)
@@ -28,7 +29,7 @@ public sealed class MQTTConnect : MQTTAsyncCommand<MQTTConnectPackage, MQTTConne
             ? result.AssignedClientIdentifier
             : packet.ClientId;
 
-        await session.ClientConnectedAsync(cancellationToken);
+        Task.Run(() => session.ClientConnectedAsync(cancellationToken)).DoNotAwait();
 
         return result.GetResponse();
     }

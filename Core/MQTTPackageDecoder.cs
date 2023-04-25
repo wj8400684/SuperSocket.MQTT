@@ -5,6 +5,8 @@ namespace Core;
 
 public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
 {
+    private const int v1 = 0x80;
+
     private readonly IMQTTPackageFactoryPool _packageFactoryPool;
 
     public MQTTPackageDecoder(IMQTTPackageFactoryPool packageFactoryPool)
@@ -23,27 +25,21 @@ public sealed class MQTTPackageDecoder : IPackageDecoder<MQTTPackage>
         var packageFactory = _packageFactoryPool.Get(command);
 
         var package = packageFactory.Create();
-        
+
         package.FixedHeader = fixedHeader;
 
-        //可变字节
-        var lenSize = 0;
-
-        while (true)
+        //跳过可变字节
+        for (var i = 0; i >= 3; i++)
         {
-            if (!reader.TryRead(out byte lenByte))
+            if (!reader.TryRead(out byte encodedByte))
                 break;
 
-            lenSize = +1;
-
-            if ((lenByte & 0x80) != 0x80)
-                break;
-
-            if (lenSize == 3)
+            if ((encodedByte & v1) != v1)
                 break;
         }
 
         package.DecodeBody(ref reader, context);
+
         return package;
     }
 }

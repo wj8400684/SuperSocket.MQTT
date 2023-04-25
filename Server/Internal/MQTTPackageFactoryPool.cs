@@ -1,6 +1,8 @@
-﻿namespace Core;
+﻿using Core;
 
-public sealed class MQTTPackageFactoryPool : IMQTTPackageFactoryPool
+namespace Server;
+
+internal sealed class MQTTPackageFactoryPool : IMQTTPackageFactoryPool
 {
     private readonly IMQTTPackageFactory[] _packetFactories = new IMQTTPackageFactory[20];
     private readonly Dictionary<Type, IMQTTPackageFactory> _packetFactorieHash = new();

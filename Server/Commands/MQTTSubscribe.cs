@@ -13,8 +13,8 @@ public sealed class MQTTSubscribe : MQTTAsyncCommand<MQTTSubscribePackage, MQTTS
     {
     }
 
-    protected override ValueTask<MQTTSubRespPackage?> ExecuteAsync(MQTTSession session, MQTTSubscribePackage package, CancellationToken cancellationToken)
+    protected override async ValueTask<MQTTSubRespPackage?> ExecuteAsync(MQTTSession session, MQTTSubscribePackage package, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await session.SubscribeAsync(package, cancellationToken);
     }
 }
